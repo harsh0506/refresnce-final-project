@@ -1,0 +1,33 @@
+{
+  "name": "calapp",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@aldabil/react-scheduler": "^2.5.14",
+    "@devexpress/dx-react-core": "^4.0.0",
+    "@devexpress/dx-react-scheduler": "^4.0.0",
+    "@devexpress/dx-react-scheduler-material-ui": "^4.0.0",
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@mui/icons-material": "^5.10.16",
+    "@mui/material": "^5.10.17",
+    "@mui/x-date-pickers": "^5.0.10",
+    "@syncfusion/ej2-react-schedule": "^20.3.58",
+    "axios": "^1.2.1",
+    "bootstrap": "^5.2.3",
+    "devextreme": "^22.1.6",
+    "eslint": "8.29.0",
+    "eslint-config-next": "13.0.6",
+    "moment": "^2.29.4",
+    "next": "13.0.6",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "rsuite": "^5.23.2"
+  }
+}
