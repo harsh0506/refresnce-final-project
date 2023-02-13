@@ -1,6 +1,6 @@
 import '../styles/globals.css'
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function MyApp({ Component, pageProps }) {
   return(

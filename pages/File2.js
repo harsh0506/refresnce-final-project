@@ -7,9 +7,10 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import axios from "axios"
 import { data } from './Data';
 
-
+/*
+the following is custom editor to create the modal
+*/
 const CustomEditor = ({ scheduler }) => {
-    console.log(scheduler)
     const event = scheduler.edited
     const [state, setState] = React.useState({
         event_id: "",
@@ -60,7 +61,7 @@ const CustomEditor = ({ scheduler }) => {
 
             }))
 
-            sendData("345637", { "calendar": state })
+            sendData("345637", { "calendar": state }).then(res => console.log(res)).catch(err => console.log(err))
 
             alert("send data")
 
