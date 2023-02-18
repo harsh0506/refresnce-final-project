@@ -13,6 +13,7 @@ import DummyCal from './DummyCal'
 import DummyCal2 from './DummyCal2'
 import DummyCal3 from './DummyCal3'
 import DummyTask1 from './DummyTask1'
+import Dummydashboard from './Dummydashboard'
 
 export default function Home() {
 
@@ -31,12 +32,13 @@ export default function Home() {
       <DummyCal />
        <DummyCal2/>
     <DummyCal3 />
-
+    <DummyTask1 />
       */
 
       }
-      <DummyTask1 />
-    
+      <Dummydashboard />
+
+      
     </div>
 
   )

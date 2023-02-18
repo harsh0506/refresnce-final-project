@@ -16,8 +16,6 @@ const Prioity = [{ value: "high", label: "high" },
 { value: "low", label: "low" },
 ]
 
-
-
 const Colors = {
     "high": "red",
     "medium": "orange",
@@ -25,7 +23,8 @@ const Colors = {
 }
 
 const schema = {
-    
+    _id:"",
+    color:"",
     dateOfActualSubmission: "",
     taskName: "",
     priority: "",
@@ -55,9 +54,10 @@ function DummyTask1() {
     };
     const handleOk = () => {
         setIsModalOpen(false);
-        HandleSubmit()
+        HandleSubmit(state._id)
     };
     const handleCancel = () => {
+        console.log(state)
         setIsModalOpen(false);
     };
 
@@ -69,28 +69,46 @@ function DummyTask1() {
         }).catch(err => setError(err.message))
     }, [])
 
-    async function HandleSubmit(id) {
+    async function HandleSubmit( ) {
         try {
+            if(state._id !== "" ){
+                const info = {
+                    Tid:state._id,
+                    data : {
+                        "TaskList.$.taskName":state.taskName,
+                        "TaskList.$.priority":state.priority,
+                        "TaskList.$.SubmissionDate":state.SubmissionDate,
+                        "TaskList.$.dateOfCreation":state.dateOfCreation,
+                    }
+                }
+                const mj = await UpdateTask("63ac28cbf8f9aa38a853831b" , info)
+                console.log(mj)
+            }
+            else{
+
+            
             setState(prev => {
                 return {
-                    ...prev
-                    , taskId: (Math.random() + 1).toString(36).substring(7),
+                    ...prev, 
                     userId: teamAdminId
                 }
             })
             const res = await SendData({ "TaskList": state })
             console.log(res)
+        }
         } catch (error) {
             console.log(error)
         }
     }
     
 // yet to be implemented 
-    async function HandleUpdateData(){
+    async function HandleUpdateData(ele){
         try {
-            
+            console.log(ele)
+            setState(ele)
+            setIsModalOpen(true);
         } catch (error) {
-            
+            console.log(error)
         }
     }
 
@@ -139,6 +157,7 @@ function DummyTask1() {
                         <Button type="primary" onClick={handleOk}>
                             Submit
                         </Button>
+                        
 
                     </LocalizationProvider>
                 </Modal>
@@ -156,7 +175,7 @@ function DummyTask1() {
 
                                 actions={[
                                     <SettingOutlined key="setting" onClick={() => DeleteItem("63ac28cbf8f9aa38a853831b", {"Parentkey": ele._id}, "639e9934d84d032b0879a0c9" , ele.userId)} />,
-                                    <EditOutlined key="edit" onClick={() => console.log(ele)}/>,
+                                    <EditOutlined key="edit" onClick={() => HandleUpdateData(ele)}/>,
                                     <EllipsisOutlined key="ellipsis" />,
                                 ]}
                             >
@@ -167,7 +186,7 @@ function DummyTask1() {
                                 />
                                 <div className="row">
                                     <span>priority</span>
-                                    <FireTwoTone style={{ width: 5 }} twoToneColor={"red"} />
+                                    <FireTwoTone style={{ width: 5 }} twoToneColor={ele.color} />
                                 </div>
                                 <div className="d-flex p-1 m-1 container">
                                     {/*Remaining days
@@ -194,8 +213,7 @@ export default DummyTask1
 //api  call to get all the data of project  mainly tasklist
 export async function GetCalendarEvents(id) {
     const _id = "63ac28cbf8f9aa38a853831b"
-    const Tasks = await (await axios.get(`http://localhost:4000/projects/SingleProject/${_id}`)).data[0]
-    console.log(Tasks.personal)
+    const Tasks = await (await axios.get(`http://localhost:4000/projects/Tasks/${_id}`)).data
     return [Tasks.TaskList, Tasks.teamAdminId, Tasks.personal]
 }
 
@@ -233,13 +251,13 @@ export async function DeleteItem(id, d, Uid, Utid){
 
 export async function UpdateTask(Pid, data){
     try {
-        const data = await (await axios.put(`http://localhost:4000/projects/arrayUpdateAll/${Pid}`, data)).data
+        let Pid = "63ac28cbf8f9aa38a853831b"
+        const m = await (await axios.put(`http://localhost:4000/projects/arrayUpdateAll/${Pid}`, data)).data
 
-        return data
+        return m
 
     } catch (error) {
-        alert("You are not allowed")
-        return "You are not allowed"
+        return error
     }
 
 }

@@ -31,6 +31,8 @@
     "react": "18.2.0",
     "react-big-calendar": "^1.6.3",
     "react-dom": "18.2.0",
-    "rsuite": "^5.26.0"
+    "rsuite": "^5.26.0",
+    "victory": "^36.6.8",
+    "victory-chart": "^36.6.8"
   }
 }
