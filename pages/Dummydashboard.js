@@ -54,7 +54,7 @@ const Schema = {
     No_of_Completed_events: "", calendar: [Event], OnGoingEvents: [Event], PieChartData: { "completed": "", "assigned": "" },
     data1: [data_1_2], data2: [data_1_2],
     HighPrioityTask: [Task], TaskCloseToSubmission: [Task], priority: "", projectName: "", projectId: "", _id: "",
-    PredictionData: "",SubmissionDate:""
+    PredictionData: "", SubmissionDate: ""
 }
 
 
@@ -72,7 +72,7 @@ function Dummydashboard() {
             projectName: state.projectName,
             priority: state.priority,
             SubmissionDate: state.SubmissionDate
-        }).then(res => console.log(res)).catch(err => console.log(err))
+        }).then(res => console.log({...res,OnGoingEvents:[Event]})).catch(err => console.log(err))
     };
     const handleCancel = () => {
         setIsModalOpen(false);
@@ -90,39 +90,39 @@ function Dummydashboard() {
                     <Button onClick={showModal}>Update</Button>
                     <Modal title="Basic Modal" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
 
-                    <LocalizationProvider dateAdapter={AdapterMoment}>
+                        <LocalizationProvider dateAdapter={AdapterMoment}>
 
-                        <TextField
-                            label="ProjectNAme"
-                            value={state.projectName}
-                            onChange={(e) => setState(prev => { return { ...prev, projectName: e.target.value } })}
-                        />
+                            <TextField
+                                label="ProjectNAme"
+                                value={state.projectName}
+                                onChange={(e) => setState(prev => { return { ...prev, projectName: e.target.value } })}
+                            />
 
-                        {/* to set submisson date */}
-                        <DateTimePicker
-                            label="submission Date"
-                            value={state.SubmissionDate}
-                            onChange={(e) => setState(prev => { return { ...prev, SubmissionDate: e._d } })}
-                            renderInput={(params) => <TextField {...params} />}
-                        />
+                            {/* to set submisson date */}
+                            <DateTimePicker
+                                label="submission Date"
+                                value={state.SubmissionDate}
+                                onChange={(e) => setState(prev => { return { ...prev, SubmissionDate: e._d } })}
+                                renderInput={(params) => <TextField {...params} />}
+                            />
 
-                        {/* add priotiry drop down */}
-                        <Cascader
-                            placeholder="priority"
-                            data={Prioity}
-                            onSelect={(e) => setState({ ...state, priority: e.value })}
-                            style={{ width: 224, color: "black" }} />
+                            {/* add priotiry drop down */}
+                            <Cascader
+                                placeholder="priority"
+                                data={Prioity}
+                                onSelect={(e) => setState({ ...state, priority: e.value })}
+                                style={{ width: 224, color: "black" }} />
 
-                        <Button type="primary" onClick={handleCancel}>
-                            x
-                        </Button> 
-                        <Button type="primary" onClick={handleOk}>
-                            Submit
-                        </Button>
-                        
+                            <Button type="primary" onClick={handleCancel}>
+                                x
+                            </Button>
+                            <Button type="primary" onClick={handleOk}>
+                                Submit
+                            </Button>
 
-                    </LocalizationProvider>
-                </Modal>
+
+                        </LocalizationProvider>
+                    </Modal>
                 </div>
 
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" style={{
@@ -133,7 +133,9 @@ function Dummydashboard() {
                         <Card style={{ maxWidth: 250, height: 200, alignItems: "center", justifyContent: "center", display: "flex", textAlign: "center" }} >
                             <div className="col">
                                 <span style={{ fontSize: 20 }}>reamining Days</span>
-                                <h3 style={{ fontSize: 100 }}>{state.remainingDays}</h3>
+                                <h3 style={{ fontSize: 100 }}>{
+                                state.remainingDays
+                                }</h3>
                             </div>
                         </Card>
                     </div>
@@ -179,7 +181,7 @@ function Dummydashboard() {
                         <p>OnGoing event</p>
                         <div style={{ overflowY: "scroll", maxHeight: 300 }} class="">
                             {
-                               state.OnGoingEvents[0].title === "" ? <p>No Ongoing events</p> : state.OnGoingEvents.map((ele) => {
+                                state.OnGoingEvents[0].title === "" ? <p>No Ongoing events , Go to Calendar tab</p> : state.OnGoingEvents.map((ele) => {
                                     return (<>
                                         <div className="col" onClick={() => null}>
                                             <Card
@@ -227,27 +229,25 @@ function Dummydashboard() {
                         <p>High priority events</p>
                         <div style={{ overflowY: "scroll", maxHeight: 300 }} class="">
 
-                            
                             {
-                                state.HighPrioityTask.map((ele) => {
-                                    return (<>
-                                        <div className="col" onClick={() => null}>
-                                            <Card
-                                                style={{
-                                                    width: 300,
-                                                    backgroundColor: "Pink",
-                                                }}
-                                            >
-                                                <Meta
-                                                    title={ele.taskName}
-                                                />
-                                                <br />
-                                                <FireTwoTone twoToneColor="#eb2f96" />
-                                            </Card>
-                                        </div>
-                                    </>)
-                                })
+                                state.HighPrioityTask[0].taskName !== "" ? state.HighPrioityTask.map((ele) => (<CardComp
+                                    taskName={ele.taskName}
+                                    priority={ele.priority}
+                                    SubmissionDate={ele.SubmissionDate}
+                                />))
+                                    : state.TaskCloseToSubmission[0].taskName !== "" ?
+                                        state.TaskCloseToSubmission.map((ele) => (<CardComp
+                                            taskName={ele.taskName}
+                                            priority={ele.priority}
+                                            SubmissionDate={ele.SubmissionDate}
+                                        />)) :
+                                        (<CardComp
+                                            taskName="No tasks"
+                                            priority={""}
+                                            SubmissionDate=""
+                                        />)
                             }
+                            
                         </div>
                     </div>
 
@@ -291,6 +291,27 @@ function Dummydashboard() {
 
 export default Dummydashboard
 
+export function CardComp({ taskName, priority, SubmissionDate }) {
+    return (
+        <div className="col" onClick={() => null}>
+            <Card
+                style={{
+                    width: 300,
+                    backgroundColor: "Pink",
+                }}
+            >
+                <Meta
+                    title={taskName}
+                />
+                <p>{Math.round((new Date(SubmissionDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) + 1
+                }</p>
+                <br />
+                <FireTwoTone twoToneColor="#eb2f96" />
+            </Card>
+        </div>
+    )
+}
+
 async function getData(id) {
     try {
         return await (await axios.get("http://localhost:4000/projects/DashBoard/63ac28cbf8f9aa38a853831b")).data
@@ -299,7 +320,7 @@ async function getData(id) {
     }
 }
 
-export async function updateData(id, data){
+export async function updateData(id, data) {
     try {
         return await axios.put(`http://localhost:4000/projects/${id}`, data)
     } catch (error) {

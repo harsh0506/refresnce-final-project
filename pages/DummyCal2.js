@@ -28,10 +28,10 @@ const localizer = momentLocalizer(moment)
 function DummyCal2() {
     const [value, setValue] = React.useState(new Date());
 
-    //for single event , handling creation ,updation of event 
+    //for single event manipulation , handling creation ,updation of event 
     const [state, setState] = React.useState(schema);
 
-    //today's events state
+    //today's events state, array showing today's event
     const [todayEvent, setTodayEvent] = React.useState([schema])
 
     //previous events state
@@ -48,7 +48,7 @@ function DummyCal2() {
 
     const [events, setEvents] = React.useState([schema])
 
-    React.useCallback(() => GetCalendarEvents(), [])
+    //React.useCallback(() => GetCalendarEvents(), [])
 
     let m = [], n = [], o = [], p = [];
 
@@ -90,7 +90,7 @@ function DummyCal2() {
         ).catch(err => console.log(err))
 
 
-    }, [GetCalendarEvents])
+    }, [userEvents])
 
     const handleChange = (value, name) => {
         setState((prev) => {
@@ -109,91 +109,93 @@ function DummyCal2() {
 
     return (
         <>
-        <div className='container' style={{padding:10}}>
-            <div className='container'>
-                <p>Creating Event</p>
-                <LocalizationProvider dateAdapter={AdapterMoment}>
-                    <TextField
-                        label="Title"
-                        value={state.title}
-                        onChange={(e) => handleChange(e.target.value, "title")}
-                        error={!!error}
-                        helperText={!!error && error["title"]}
-                        fullWidth
-                    />
-                    <TextField
-                        label="Description"
-                        value={state.description}
-                        onChange={(e) => handleChange(e.target.value, "description")}
-                        fullWidth
-                    />
-
-                    <input
-                        label="color"
-                        type="color"
-                        value={state.color}
-                        onChange={(e) => handleChange(e.target.value, "color")}
-                    />
-
-                    <DateTimePicker
-                        label="Date&Time picker"
-                        value={state.start}
-                        onChange={(e) => handleChange(e._d, "start")}
-                        renderInput={(params) => <TextField {...params} />}
-                    />
-
-                    <DateTimePicker
-                        label="Date&Time picker"
-                        value={state.end}
-                        onChange={(e) => handleChange(e._d, "end")}
-                        renderInput={(params) => <TextField {...params} />}
-                    />
-                    <Button onClick={handleSubmit}>Confirm</Button>
-                </LocalizationProvider>
-            </div>
+            <div className='container' style={{ padding: 10 }}>
 
 
-            <p>display event</p>
-            <div style={{ display: "flex", gap: 50 }} className="d-flex container">
+                <div className="container">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" style={{
+                        display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center"
+                    }}>
+                        <div className="row">
+                            <p>calendar</p>
+                            <StaticDatePickerLandscape value={value} setValue={setValue} events={events} />
+                        </div>
+                        <div className='container' style={{ background: "pink" }}>
+                            <p>Creating Event</p>
+                            <LocalizationProvider dateAdapter={AdapterMoment}>
+                                <TextField
+                                    label="Title"
+                                    value={state.title}
+                                    onChange={(e) => handleChange(e.target.value, "title")}
+                                    error={!!error}
+                                    helperText={!!error && error["title"]}
+                                    fullWidth
+                                />
+                                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" style={{
+                                    display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center"
+                                }}>
 
-                <div style={{ maxWidth: "50%" }} className="row">
-                    <p>calendar</p>
-                    <StaticDatePickerLandscape value={value} setValue={setValue} events={events} />
+                                    <DateTimePicker
+                                        label="Starting Date"
+                                        value={state.start}
+                                        onChange={(e) => handleChange(e._d, "start")}
+                                        renderInput={(params) => <TextField {...params} />}
+                                    />
+
+                                    <DateTimePicker
+                                        label="Ending Date"
+                                        value={state.end}
+                                        onChange={(e) => handleChange(e._d, "end")}
+                                        renderInput={(params) => <TextField {...params} />}
+                                    />
+                                </div>
+                                <Button onClick={handleSubmit}>Confirm</Button>
+                            </LocalizationProvider>
+                        </div>
+                        <div style={{ maxWidth: "50%", maxHeight: 300, overflowY: "scroll" }} className="row">
+                            <p>Today's event</p>
+                            <TodayEvents userEvents={todayEvent} value={value} />
+                        </div>
+                    </div>
                 </div>
 
-                <div style={{ maxWidth: "50%" }} className="row">
-                    <p>ongoing evets</p>
-                    <OnGoingTAsk userEvents={userEvents} EmptyHeaderText={"No Ongoing events"} />
+
+                <p>display event</p>
+                <div style={{ display: "flex", gap: 50 }} className="d-flex container">
+
+
+
+                    <div style={{ maxWidth: "50%", maxHeight: 200, overflowY: "scroll" }} className="row">
+                        <p>ongoing evets</p>
+                        <OnGoingTAsk userEvents={userEvents} EmptyHeaderText={"No Ongoing events"} />
+                    </div>
+
+                    <div style={{ maxWidth: "50%", maxHeight: 200, overflowY: "scroll" }} className="row">
+                        <p>Upcoming Events</p>
+                        <OnGoingTAsk userEvents={futureEvents} EmptyHeaderText={"No Upcoming Events"} />
+                    </div>
+
+                    <div style={{ maxWidth: "50%", maxHeight: 200, overflowY: "scroll" }} className="row">
+                        <p>Previous Events</p>
+                        <OnGoingTAsk userEvents={prevEvents} EmptyHeaderText={"No Previous Events"} />
+                    </div>
+
+
+
                 </div>
 
-                <div style={{ maxWidth: "50%" }} className="row">
-                    <p>Upcoming Events</p>
-                    <OnGoingTAsk userEvents={futureEvents} EmptyHeaderText={"No Upcoming Events"} />
-                </div>
 
-                <div style={{ maxWidth: "50%" }} className="row">
-                    <p>Previous Events</p>
-                    <OnGoingTAsk userEvents={prevEvents} EmptyHeaderText={"No Previous Events"} />
-                </div>
-
-                <div style={{ maxWidth: "50%" }} className="row">
-                    <p>Today's event</p>
-                    <TodayEvents userEvents={todayEvent} value={value} />
-                </div>
-
-            </div>
-
-            
             </div>
         </>
     )
 }
 
-export function OnGoingTAsk({ userEvents , EmptyHeaderText }) {
+export function OnGoingTAsk({ userEvents, EmptyHeaderText }) {
     const [state, setState] = React.useState({
         end: "",
         title: "",
-        _id: ""
+        _id: "",
+        start: ""
     })
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const showModal = (ele) => {
@@ -201,7 +203,18 @@ export function OnGoingTAsk({ userEvents , EmptyHeaderText }) {
         setIsModalOpen(true);
     };
     const handleOk = () => {
-        updateData("end", state.end, "63ac28cbf8f9aa38a853831b", state._id).then(res => console.log(res)).catch(err => console.log(err))
+        console.log(state)
+
+        const d = {
+            Cid:  state._id,
+            data: {
+                "calendar.$.start": state.start,
+                "calendar.$.end": state.end,
+                "calendar.$.title": state.title,
+            }
+        }
+        
+        updateData("63ac28cbf8f9aa38a853831b", d).then(res => console.log(res)).catch(err => console.log(err))
         setIsModalOpen(false);
     };
     const handleCancel = () => {
@@ -212,15 +225,30 @@ export function OnGoingTAsk({ userEvents , EmptyHeaderText }) {
             <LocalizationProvider dateAdapter={AdapterMoment}>
                 <Modal title="Basic Modal" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
                     <DateTimePicker
-                        label="Date&Time picker"
-                        value={state}
-                        onChange={(e) => setState(e._d)}
+                        label="start date"
+                        value={state.start}
+                        onChange={(e) => setState(prev => { return { ...prev, start: e._d } })}
                         renderInput={(params) => <TextField {...params} />}
                     />
+
+                    <DateTimePicker
+                        label="end date"
+                        value={state.end}
+                        onChange={(e) => setState(prev => { return { ...prev, end: e._d } })}
+                        renderInput={(params) => <TextField {...params} />}
+                    />
+
+                    <TextField
+                        label="Title"
+                        value={state.title}
+                        onChange={(e) => setState(prev => { return { ...prev, title: e.target.value } })}
+                        fullWidth
+                    />
+
                 </Modal>
                 <div style={{ maxWidth: "50%" }} class="">
                     {
-                        userEvents.length === 0 ? <h5>{EmptyHeaderText}</h5> :userEvents.map((ele) => {
+                        userEvents.length === 0 ? <h5>{EmptyHeaderText}</h5> : userEvents.map((ele) => {
 
                             return (
                                 <div className="col" style={{ maxWidth: "50%", minWidth: "40%" }} onClick={() => null}>
@@ -271,7 +299,7 @@ export function TodayEvents({ userEvents }) {
                 <h3>{new Date().getDate()}/{new Date().getMonth() + 1}/{new Date().getFullYear()}</h3>
                 <div className="row">
                     {
-                        am[0].end==="" && am[0].start === ""? <h5>No Events for Today</h5> : am.map(ele => (<p>{ele.title}</p>))
+                        am[0].end === "" && am[0].start === "" ? <h5>No Events for Today</h5> : am.map(ele => (<p>{ele.title}</p>))
                     }
                 </div>
             </div>
@@ -294,9 +322,9 @@ export async function GetCalendarEvents(id) {
     return await (await axios.get(`http://localhost:4000/projects/SingleProject/${_id}`)).data[0].calendar
 }
 
-export async function updateData(key, value, Pid, Cid) {
+export async function updateData( Pid, data) {
     try {
-        return await axios.put(`http://localhost:4000/projects/uAoO/${Pid}`, { key, "_id": Cid, value })
+        return await axios.put(`http://localhost:4000/projects/arrayUpdateAllCalendar/${Pid}`, data)
     } catch (error) {
         console.log(error)
     }
@@ -315,13 +343,13 @@ export async function deleteObject(Pid, Cid) {
 export function StaticDatePickerLandscape({ value, setValue, events }) {
     return (
         <>
-            <div className="container" style={{ maxWidth: "40%" }}>
+            <div className="container" >
                 <Calendar
                     localizer={localizer}
                     events={events}
                     startAccessor="start"
                     endAccessor="end"
-                    style={{ height: 500 }} />
+                    style={{ height: 400 }} />
             </div>
 
         </>
