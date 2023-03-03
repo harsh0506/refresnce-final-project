@@ -1,13 +1,13 @@
 import axios from 'axios'
 import React from 'react'
-import { EditOutlined, EllipsisOutlined, SettingOutlined, FireTwoTone } from '@ant-design/icons';
+import { EditOutlined, EllipsisOutlined, SettingOutlined, DeleteOutlined, CloseCircleTwoTone, CheckCircleOutlined, FireTwoTone } from '@ant-design/icons';
 import { Avatar, Card } from 'antd';
 import { TextField } from "@mui/material";
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { Modal, Toggle, Cascader, ButtonToolbar, Button, Loader, Placeholder, DatePicker } from 'rsuite';
-
+import Divider from '@mui/material/Divider';
 
 const { Meta } = Card;
 
@@ -16,15 +16,9 @@ const Prioity = [{ value: "high", label: "high" },
 { value: "low", label: "low" },
 ]
 
-const Colors = {
-    "high": "red",
-    "medium": "orange",
-    "loe": "yellow"
-}
-
 const schema = {
-    _id:"",
-    color:"",
+
+    color: "",
     dateOfActualSubmission: "",
     taskName: "",
     priority: "",
@@ -38,9 +32,11 @@ const schema = {
 
 function DummyTask1() {
 
-    const [Tasks, setTasks] = React.useState([{_id:"",...schema}])
+    const [assigedTask, setAssignedTask] = React.useState([{ _id: "", ...schema }])
 
-    const [state, setState] = React.useState(schema)
+    const [completedTask, setCompletedTask] = React.useState([{ _id: "", ...schema }])
+
+    const [state, setState] = React.useState(schema )
 
     const [error, setError] = React.useState()
 
@@ -48,64 +44,76 @@ function DummyTask1() {
 
     const [teamAdminId, setTeamAdminId] = React.useState("")
 
+    const [Btnstate, setBtnstate] = React.useState("create")
+
     const [isModalOpen, setIsModalOpen] = React.useState(false);
-    const showModal = (ele) => {
-        setIsModalOpen(true);
-    };
-    const handleOk = () => {
-        setIsModalOpen(false);
-        HandleSubmit(state._id)
-    };
-    const handleCancel = () => {
-        console.log(state)
-        setIsModalOpen(false);
-    };
 
     React.useEffect(() => {
         GetCalendarEvents().then((res) => {
-            setTasks(res[0])
-            setTeamAdminId(res[1])
-            setPersonal(res[2])
+            console.log(res)
+            setAssignedTask(res[0])
+            setCompletedTask(res[1])
+            setTeamAdminId(res[2])
+            setPersonal(res[3])
         }).catch(err => setError(err.message))
     }, [])
 
-    async function HandleSubmit( ) {
+    const showModal = (ele) => {
+        setIsModalOpen(true);
+    };
+
+    const handleOk = async () => {
+        setIsModalOpen(false);
         try {
-            if(state._id !== "" ){
+            if (Btnstate === "create") {
+                setState(prev => {
+                    return {
+                        ...prev,
+                        userId: teamAdminId
+                    }
+                })
+                console.log(state)
+                const res = await SendData({ "TaskList": state })
+                console.log(res)
+            }
+            if(Btnstate === "update") {
                 const info = {
-                    Tid:state._id,
-                    data : {
-                        "TaskList.$.taskName":state.taskName,
-                        "TaskList.$.priority":state.priority,
-                        "TaskList.$.SubmissionDate":state.SubmissionDate,
-                        "TaskList.$.dateOfCreation":state.dateOfCreation,
+                    Tid: state._id,
+                    data: {
+                        "TaskList.$.taskName": state.taskName,
+                        "TaskList.$.priority": state.priority,
+                        "TaskList.$.SubmissionDate": state.SubmissionDate,
+                        "TaskList.$.dateOfCreation": state.dateOfCreation,
                     }
                 }
-                const mj = await UpdateTask("63ac28cbf8f9aa38a853831b" , info)
+                const mj = await UpdateTask("63ac28cbf8f9aa38a853831b", info)
                 console.log(mj)
             }
-            else{
-
             
-            setState(prev => {
-                return {
-                    ...prev, 
-                    userId: teamAdminId
-                }
-            })
-            const res = await SendData({ "TaskList": state })
-            console.log(res)
-        }
+            for (const key in state) {
+                state[key] = "";
+            }
+            setState(state)
+            setBtnstate("create")
         } catch (error) {
             console.log(error)
         }
-    }
-    
-// yet to be implemented 
-    async function HandleUpdateData(ele){
+    };
+
+    const handleCancel = () => { 
+        setIsModalOpen(false);
+        setBtnstate("create")
+        for (const key in state) {
+            state[key] = "";
+        }
+        setState(state)
+     }
+
+    async function HandleUpdateData(ele) {
         try {
             console.log(ele)
             setState(ele)
+            setBtnstate("update")
             setIsModalOpen(true);
         } catch (error) {
             console.log(error)
@@ -117,110 +125,199 @@ function DummyTask1() {
     return (
         <div className='container'>
 
-            <div className="container">
-                <button onClick={showModal}>Create event</button>
-                <Modal title="Basic Modal" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
+            <div className="container p-2">
+                <button onClick={showModal}>Create Task</button>
+                <Modal title="Create Task" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
 
                     <LocalizationProvider dateAdapter={AdapterMoment}>
+                        <div className="container" style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 10,
+                        }}>
 
-                        <TextField
-                            label="TaskNAme"
-                            value={state.taskName}
-                            onChange={(e) => setState(prev => { return { ...prev, taskName: e.target.value } })}
-                        />
-                        {/* to set creation date */}
-                        <DateTimePicker
-                            label="Date&Time picker"
-                            value={state.dateOfCreation}
-                            onChange={(e) => setState(prev => { return { ...prev, dateOfCreation: e._d } })}
-                            renderInput={(params) => <TextField {...params} />}
-                        />
+                            <h2>Create Task</h2>
 
-                        {/* to set submisson date */}
-                        <DateTimePicker
-                            label="Date&Time picker"
-                            value={state.SubmissionDate}
-                            onChange={(e) => setState(prev => { return { ...prev, SubmissionDate: e._d } })}
-                            renderInput={(params) => <TextField {...params} />}
-                        />
+                            <TextField
+                                label="TaskNAme"
+                                value={state.taskName}
+                                onChange={(e) => setState(prev => { return { ...prev, taskName: e.target.value } })}
+                            />
+                            {/* to set creation date */}
+                            <DateTimePicker
+                                label="Start Date"
+                                value={state.dateOfCreation}
+                                onChange={(e) => setState(prev => { return { ...prev, dateOfCreation: e._d } })}
+                                renderInput={(params) => <TextField {...params} />}
+                            />
 
-                        {/* add priotiry drop down */}
-                        <Cascader
-                            placeholder="priority"
-                            data={Prioity}
-                            onSelect={(e) => setState({ ...state, priority: e.value })}
-                            style={{ width: 224, color: "black" }} />
+                            {/* to set submisson date */}
+                            <DateTimePicker
+                                label="Submission Date"
+                                value={state.SubmissionDate}
+                                onChange={(e) => setState(prev => { return { ...prev, SubmissionDate: e._d } })}
+                                renderInput={(params) => <TextField {...params} />}
+                            />
 
-                        <Button type="primary" onClick={handleCancel}>
-                            x
-                        </Button> 
-                        <Button type="primary" onClick={handleOk}>
-                            Submit
-                        </Button>
-                        
+                            {/* add priotiry drop down */}
+                            <Cascader
+                                placeholder="priority"
+                                data={Prioity}
+                                onSelect={(e) => setState({ ...state, priority: e.value })}
+                                style={{ width: 224, color: "black" }} />
 
+                            <div className="d-flex container" style={{
+                                gap: 20,
+                                alignItems: "center",
+                                justifyContent: "center",
+                                display: "flex"
+                            }}>
+                                <Button type="primary" onClick={handleCancel}>
+                                    close <CloseCircleTwoTone />
+                                </Button>
+                                {
+                                    Btnstate === "create" ?
+                                        <Button type="primary" onClick={handleOk}>
+                                            Create
+                                        </Button> :
+                                        <Button type="primary" onClick={handleOk}>
+                                            Update
+                                        </Button>
+                                }
+
+                            </div>
+
+
+                        </div>
                     </LocalizationProvider>
                 </Modal>
             </div>
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
 
-                {
-                    Tasks[0].taskName === "" ? <p>No task and Create some</p> : Tasks.map((ele) => {
-                        return (<div className="col ">
-                            <Card
-                                style={{
-                                    width: 300,
-                                    background: "pink"
-                                }}
+            <div className="container" style={{
+                width: "200vw",
+                background: "red",
+            }}>
+                assigned Tasks
+                <DisplayTask Tasks={assigedTask} HandleUpdateData={HandleUpdateData} msg={"assigned"} />
 
-                                actions={[
-                                    <SettingOutlined key="setting" onClick={() => DeleteItem("63ac28cbf8f9aa38a853831b", {"Parentkey": ele._id}, "639e9934d84d032b0879a0c9" , ele.userId)} />,
-                                    <EditOutlined key="edit" onClick={() => HandleUpdateData(ele)}/>,
-                                    <EllipsisOutlined key="ellipsis" />,
-                                ]}
-                            >
-                                <Meta
-                                    avatar={<Avatar src="https://joeschmoe.io/api/v1/random" />}
-                                    title={ele.taskName}
-                                    description="This is the description"
-                                />
-                                <div className="row">
-                                    <span>priority</span>
-                                    <FireTwoTone style={{ width: 5 }} twoToneColor={ele.color} />
-                                </div>
-                                <div className="d-flex p-1 m-1 container">
-                                    {/*Remaining days
-                                            the text color must change as per remianing days value i.e if small number then it can be red as date of submission is close and if number is big then it can be green to show we still time
-                                            it is yet to implemet
-                                            */}
-                                    <div className="row">
-                                        <span>remaining Days</span>
-                                        <p>{
-                                            Math.round((new Date(ele.SubmissionDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) + 1
-                                        }</p>
-                                    </div>
-                                </div>
-                            </Card>
-                        </div>)
-                    })
-                }</div>
-        </div>
+            </div>
+            <br />
+            <div className="container" style={{
+                width: "200vw",
+                background: "red",
+            }}>
+                Comppleted Tasks
+                <DisplayTask Tasks={completedTask} HandleUpdateData={HandleUpdateData} msg={"completed"} />
+            </div>
+
+
+        </div >
     )
 }
 
 export default DummyTask1
 
+export function DisplayTask({ Tasks, HandleUpdateData, msg }) {
+    console.log(msg)
+    return (
+        <>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 p-2 my-2">
+
+                {
+                    Tasks.map((ele) => {
+                        return (
+                            <div className="col ">
+                                <Card
+                                    style={{
+                                        width: 300,
+                                        background: "pink"
+                                    }}
+
+                                    actions={[
+                                        <DeleteOutlined key="DeleteOutlined" onClick={() => DeleteItem("63ac28cbf8f9aa38a853831b", { "Parentkey": ele._id }, "639e9934d84d032b0879a0c9", ele.userId)} />,
+                                        <EditOutlined key="edit" onClick={() => HandleUpdateData(ele)} />,
+                                        <CheckCircleOutlined key="CheckCircleOutlined" onClick={() => {
+                                            UpdateTask("63ac28cbf8f9aa38a853831b", {
+                                                Tid: ele._id,
+                                                data: {
+                                                    "TaskList.$.Status": "completed",
+                                                    "TaskList.$.dateOfActualSubmission": new Date()
+                                                }
+                                            }).then(res => console.log(res)).catch(err => console.log(err))
+                                        }} />,
+                                    ]}
+                                >
+                                    <Meta
+                                        avatar={<Avatar src="https://static.thenounproject.com/png/4038155-200.png" />}
+                                        title={ele.taskName}
+                                    />
+                                    <div className="row">
+                                        <span>priority</span>
+                                        <FireTwoTone style={{ width: 5 }} twoToneColor={ele.color} />
+                                    </div>
+                                    <div className="d-flex p-1 m-1 container">
+
+                                        <DisplayDays
+                                            SubmissionDate={ele.SubmissionDate}
+                                            dateOfActualSubmission={ele.dateOfActualSubmission}
+                                            Status={ele.Status}
+                                        />
+                                    </div>
+                                </Card>
+
+                            </div>)
+                    })
+
+                }
+            </div>
+        </>
+    )
+}
+
+export function DisplayDays({ SubmissionDate, dateOfActualSubmission, Status }) {
+    return (
+        <div className="row">
+            {
+
+                (Status === "assigned") ? (
+                    <>
+                        <span>remaining Days</span>
+                        <p>{
+                            Math.round((new Date(SubmissionDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) + 1
+                        }</p>
+                    </>
+                )
+                    : (
+                        <>
+                            <span>Compltede on</span>
+                            <p>{
+                                new Date(dateOfActualSubmission).getDate()}/{new Date(dateOfActualSubmission).getMonth() + 1}/{new Date(dateOfActualSubmission).getFullYear()
+                                }</p>
+                        </>
+
+                    )}
+        </div>
+    )
+
+
+}
+
 //api  call to get all the data of project  mainly tasklist
 export async function GetCalendarEvents(id) {
     const _id = "63ac28cbf8f9aa38a853831b"
     const Tasks = await (await axios.get(`http://localhost:4000/projects/Tasks/${_id}`)).data
-    return [Tasks.TaskList, Tasks.teamAdminId, Tasks.personal]
+    let assigedTask = [], completedTask = [];
+    Tasks.TaskList.map(a => {
+        a.Status === "assigned" ? assigedTask.push(a) : completedTask.push(a)
+    });
+    console.log(assigedTask, completedTask)
+    return [assigedTask, completedTask, Tasks.teamAdminId, Tasks.personal]
 }
 
 export async function SendData(d) {
     try {
         const Pid = "345637"
-        const res = await (await axios.put(`http://localhost:4000/projects/arrAdd/${Pid}`, d)).data[0].TaskList
+        const res = await axios.put(`http://localhost:4000/projects/arrAdd/${Pid}`, d)
         return res
     } catch (error) {
         return error
@@ -233,26 +330,25 @@ if same they can delete the task else error will be thrown.
 */
 
 
-export async function DeleteItem(id, d, Uid, Utid){
+export async function DeleteItem(id, d, Uid, Utid) {
     try {
-        if(Uid === Utid){
+        if (Uid === Utid) {
             const data = await axios.put(`http://localhost:4000/projects/projDelete/${id}`, d)
             alert("Deleted Successfully")
             return data
-        } else{
+        } else {
             alert("You are not allowed")
             return "You are not allowed"
         }
-        
+
     } catch (error) {
         return error
     }
 }
 
-export async function UpdateTask(Pid, data){
+export async function UpdateTask(Pid, d) {
     try {
-        let Pid = "63ac28cbf8f9aa38a853831b"
-        const m = await (await axios.put(`http://localhost:4000/projects/arrayUpdateAll/${Pid}`, data)).data
+        const m = await (await axios.put(`http://localhost:4000/projects/arrayUpdateAll/${Pid}`, d)).data
 
         return m
 
